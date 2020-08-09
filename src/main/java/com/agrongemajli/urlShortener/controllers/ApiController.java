@@ -12,39 +12,38 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
+import java.net.URL;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/")
-public class MainController {
+@RequestMapping("/api")
+public class ApiController {
 
     private final ShortURLRepository shortURLRepository;
 
     @Autowired
-    public MainController(ShortURLRepository shortURLRepository) {
+    public ApiController(ShortURLRepository shortURLRepository) {
         this.shortURLRepository = shortURLRepository;
     }
 
-
-    // Redirects to URL held by slug in database if exists.
-    @GetMapping(path = "/{shortSlug}")
-    public String redirectSlug(@PathVariable String shortSlug){
+    // Receives Short URL Object via slug given. returns in JSON.
+    @GetMapping(path = "/shorturl/{shortSlug}")
+    public ResponseEntity<URLShort> redirectSlug(@PathVariable String shortSlug){
         Optional<URLShort> shortOptional = shortURLRepository.findByShortSlug(shortSlug);
-        return shortOptional.map(urlShort -> "redirect:" + urlShort.getFullURL()).orElse("404");
+        return shortOptional.map(urlShort -> ResponseEntity.ok().body(urlShort)).orElse(ResponseEntity.badRequest().build());
     }
-
 
     //Creates short url based on URL passed as JSON.
     //Creates random alphanumeric and checks if exists in db.
     //Allows same url to be added in db.
-    @PostMapping(path = "/createshort", consumes = "application/json")
+    @PostMapping(path = "/shorturl/create", consumes = "application/json")
     public ResponseEntity<URLShort> createSlug(@RequestBody URLShort urlShort){
         String[] schemes = {"http","https"}; // DEFAULT schemes = "http", "https", "ftp"
         UrlValidator urlValidator = new UrlValidator(schemes);
         if(urlValidator.isValid(urlShort.getFullURL())){
-            String slugID = RandomStringUtils.randomAlphanumeric(8);
+            String slugID = RandomStringUtils.randomAlphanumeric(10);
             while(shortURLRepository.findByShortSlug(slugID).isPresent()){
-                RandomStringUtils.randomAlphanumeric(8);
+                RandomStringUtils.randomAlphanumeric(10);
             }
             urlShort.setShortSlug(slugID);
             return ResponseEntity.ok().body(shortURLRepository.save(urlShort));
