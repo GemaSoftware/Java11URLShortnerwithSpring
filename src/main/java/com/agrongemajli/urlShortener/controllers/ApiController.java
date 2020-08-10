@@ -17,6 +17,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/api")
+
 public class ApiController {
 
     private final ShortURLRepository shortURLRepository;
@@ -28,15 +29,17 @@ public class ApiController {
 
     // Receives Short URL Object via slug given. returns in JSON.
     @GetMapping(path = "/shorturl/{shortSlug}")
+    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<URLShort> redirectSlug(@PathVariable String shortSlug){
         Optional<URLShort> shortOptional = shortURLRepository.findByShortSlug(shortSlug);
-        return shortOptional.map(urlShort -> ResponseEntity.ok().body(urlShort)).orElse(ResponseEntity.badRequest().build());
+        return shortOptional.map(urlShort -> ResponseEntity.ok().body(urlShort)).orElse(ResponseEntity.noContent().build());
     }
 
     //Creates short url based on URL passed as JSON.
     //Creates random alphanumeric and checks if exists in db.
     //Allows same url to be added in db.
     @PostMapping(path = "/shorturl/create", consumes = "application/json")
+    @CrossOrigin(origins = "http://localhost:3000")
     public ResponseEntity<URLShort> createSlug(@RequestBody URLShort urlShort){
         String[] schemes = {"http","https"}; // DEFAULT schemes = "http", "https", "ftp"
         UrlValidator urlValidator = new UrlValidator(schemes);
