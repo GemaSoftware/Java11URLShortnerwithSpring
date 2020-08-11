@@ -46,7 +46,7 @@ public class ApiController {
         if(urlValidator.isValid(urlShort.getFullURL())){
             String slugID = RandomStringUtils.randomAlphanumeric(10);
             while(shortURLRepository.findByShortSlug(slugID).isPresent()){
-                RandomStringUtils.randomAlphanumeric(10);
+                slugID = RandomStringUtils.randomAlphanumeric(10);
             }
             urlShort.setShortSlug(slugID);
             return ResponseEntity.ok().body(shortURLRepository.save(urlShort));
